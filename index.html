@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MediSense Guardian Mode</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0C1117; --panel:#111827; --card:rgba(255,255,255,.04); --border:rgba(255,255,255,.08);
+      --text:#F1F5F9; --sub:#94A3B8; --muted:#64748B; --green:#4CAF7D; --green-dark:#1B5E3B;
+      --amber:#FBBF24; --red:#F87171; --blue:#818CF8;
+      --fs:15px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;font-family:'Pretendard',sans-serif;background:linear-gradient(180deg,#0B1016,#0C1117);color:var(--text);font-size:var(--fs)}
+    body{overflow-x:hidden}
+    .wrap{max-width:820px;margin:0 auto;padding:18px 18px 36px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand-badge{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--green-dark),var(--green));display:flex;align-items:center;justify-content:center;font-size:21px}
+    .brand h1{font-size:22px;font-weight:800;line-height:1.15}
+    .brand p{font-size:13px;color:var(--sub);margin-top:2px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .btn{border:none;border-radius:12px;padding:12px 14px;font:inherit;font-weight:700;cursor:pointer;transition:.18s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+    .btn:active{transform:scale(.98)}
+    .btn-primary{background:linear-gradient(135deg,var(--green-dark),var(--green));color:#fff}
+    .btn-ghost{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--sub)}
+    .btn-danger{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.2);color:var(--red)}
+    .hero{background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(76,175,125,.08));border:1px solid rgba(129,140,248,.14);border-radius:18px;padding:18px 18px 16px;margin-bottom:16px}
+    .hero h2{font-size:22px;font-weight:800;margin-bottom:8px}
+    .hero p{font-size:14px;line-height:1.7;color:#CBD5E1}
+    .notice{margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.16);font-size:13px;color:#FCD34D;line-height:1.6}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px}
+    .card h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+    .input-row{display:flex;gap:10px;flex-wrap:wrap}
+    .input{flex:1;min-width:220px;padding:13px 14px;border-radius:12px;border:1.5px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);font:inherit;outline:none}
+    .input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(76,175,125,.15)}
+    .helper{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}
+    .meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .meta-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:14px}
+    .meta-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .meta-val{font-size:16px;font-weight:700}
+    .urgency-card{border-radius:18px;padding:18px;margin-bottom:14px}
+    .urgency-card.low{background:linear-gradient(135deg,rgba(76,175,125,.13),rgba(27,94,59,.08));border:1px solid rgba(76,175,125,.22)}
+    .urgency-card.medium{background:linear-gradient(135deg,rgba(251,191,36,.12),rgba(180,83,9,.08));border:1px solid rgba(251,191,36,.18)}
+    .urgency-card.high{background:linear-gradient(135deg,rgba(248,113,113,.14),rgba(185,28,28,.09));border:1px solid rgba(248,113,113,.22)}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+    .badge.low{background:rgba(76,175,125,.18);color:#86EFAC}
+    .badge.medium{background:rgba(251,191,36,.18);color:#FCD34D}
+    .badge.high{background:rgba(248,113,113,.18);color:#FCA5A5}
+    .urgency-title{font-size:26px;font-weight:800;line-height:1.15;margin-bottom:8px}
+    .urgency-desc{font-size:15px;color:#E2E8F0;line-height:1.7}
+    .guardian-card{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(30,41,59,.08));border:1px solid rgba(129,140,248,.2);border-radius:16px;padding:16px;margin-bottom:14px}
+    .guardian-card h4{font-size:17px;font-weight:800;margin-bottom:8px;color:#C7D2FE}
+    .guardian-card p{font-size:14px;color:#E2E8F0;line-height:1.7}
+    .danger-card{display:flex;gap:12px;align-items:flex-start;padding:16px;border-radius:16px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);margin-bottom:14px}
+    .danger-card .icon{font-size:24px;flex-shrink:0}
+    .danger-card h4{font-size:17px;color:#FCA5A5;margin-bottom:4px}
+    .danger-card p{font-size:14px;line-height:1.6;color:#FECACA}
+    .grid{display:grid;grid-template-columns:1fr;gap:10px}
+    .item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:14px}
+    .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+    .item-title{font-size:16px;font-weight:700}
+    .pill{font-size:11px;padding:3px 8px;border-radius:999px;font-weight:800}
+    .pill.high{background:#DCFCE7;color:#166534}
+    .pill.med{background:#FEF3C7;color:#92400E}
+    .pill.low{background:rgba(255,255,255,.08);color:#CBD5E1}
+    .item-desc{font-size:14px;line-height:1.65;color:#CBD5E1}
+    .dept{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+    .dept.primary{background:rgba(76,175,125,.08);border-color:rgba(76,175,125,.22)}
+    .dept-icon{font-size:24px;flex-shrink:0}
+    .dept-tag{display:inline-block;font-size:10px;font-weight:800;border-radius:999px;padding:3px 8px;margin-bottom:5px}
+    .dept-tag.primary{background:rgba(76,175,125,.2);color:#86EFAC}
+    .dept-tag.secondary{background:rgba(99,102,241,.2);color:#C7D2FE}
+    .dept-name{font-size:16px;font-weight:700;margin-bottom:3px}
+    .dept-reason{font-size:14px;line-height:1.6;color:#CBD5E1}
+    .checklist{list-style:none;display:flex;flex-direction:column;gap:8px}
+    .checklist li{display:flex;gap:9px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:14px;line-height:1.65;color:#E2E8F0}
+    .checklist li:last-child{border-bottom:none}
+    .report{background:rgba(76,175,125,.06);border:1px solid rgba(76,175,125,.18);border-radius:16px;padding:16px}
+    .report-row{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .report-row:last-child{border-bottom:none}
+    .report-label{min-width:86px;color:var(--muted);font-weight:700;font-size:13px}
+    .report-val{flex:1;color:#E2E8F0;line-height:1.65;font-size:14px}
+    .empty{padding:36px 20px;text-align:center;color:var(--sub);line-height:1.8}
+    .hidden{display:none !important}
+    .footer-note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:16px;text-align:center}
+    @media (max-width:640px){
+      .wrap{padding:16px 14px 32px}
+      .topbar{flex-direction:column;align-items:stretch}
+      .meta-grid{grid-template-columns:1fr}
+      .urgency-title{font-size:22px}
+      .input-row{flex-direction:column}
+      .toolbar{justify-content:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">👨‍👩‍👧</div>
+        <div>
+          <h1>MediSense 보호자 모드</h1>
+          <p>보호자가 분석 결과를 빠르게 이해하고 대응할 수 있는 전용 화면</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn btn-ghost" id="print-btn">🖨️ 인쇄</button>
+        <button class="btn btn-primary" id="copy-btn">📋 요약 복사</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h2>보호자 전용 결과 보기</h2>
+      <p>
+        환자가 공유한 링크를 열거나, 아래 입력칸에 <strong>공유 링크</strong> 또는 <strong>share 토큰</strong>을 붙여넣으면
+        결과를 보호자용으로 정리해서 보여줍니다.
+      </p>
+      <div class="notice">
+        이 화면은 <strong>의료 진단을 대신하지 않습니다.</strong> 응급 증상이나 상태 악화가 의심되면 즉시 119 또는 가까운 응급실을 이용하세요.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>공유 링크 불러오기</h3>
+      <div class="input-row">
+        <input class="input" id="share-input" placeholder="공유 링크 또는 share 토큰을 붙여넣어 주세요" />
+        <button class="btn btn-primary" id="load-btn">불러오기</button>
+      </div>
+      <div class="helper">
+        예: <code>https://.../guardian.html?share=...</code> 전체를 붙여넣어도 되고, <code>share=</code> 뒤의 값만 넣어도 됩니다.
+      </div>
+    </div>
+
+    <div id="empty-state" class="card empty">
+      공유 링크를 불러오면 보호자용 요약, 긴급도, 권장 행동, 병원 검색 링크가 여기에 표시됩니다.
+    </div>
+
+    <div id="result-shell" class="hidden">
+      <div class="meta-grid">
+        <div class="meta-box">
+          <div class="meta-label">생성 시각</div>
+          <div class="meta-val" id="gen-time">-</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">권장 진료 키워드</div>
+          <div class="meta-val" id="search-keyword">-</div>
+        </div>
+      </div>
+
+      <div id="urgency-card" class="urgency-card low" style="margin-top:14px;">
+        <div id="urgency-badge" class="badge low">🟢 낮은 긴급도</div>
+        <div class="urgency-title" id="urgency-title">보호자 확인 완료</div>
+        <div class="urgency-desc" id="summary-text"></div>
+      </div>
+
+      <div id="guardian-help" class="guardian-card">
+        <h4>보호자가 지금 해주면 좋은 일</h4>
+        <p id="guardian-help-text"></p>
+      </div>
+
+      <div id="emergency-box" class="danger-card hidden">
+        <div class="icon">🚨</div>
+        <div>
+          <h4>즉시 대응이 필요할 수 있습니다</h4>
+          <p id="emergency-text"></p>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <a class="btn btn-danger" href="tel:119">📞 119 신고</a>
+            <a class="btn btn-ghost" id="er-search-link" target="_blank" rel="noopener">🏥 응급실 검색</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>가능한 원인</h3>
+        <div id="conditions-list" class="grid"></div>
+      </div>
+
+      <div class="card">
+        <h3>추천 진료과</h3>
+        <div id="departments-list" class="grid"></div>
+      </div>
+
+      <div class="card">
+        <h3>권장 행동 체크리스트</h3>
+        <ul id="advice-list" class="checklist"></ul>
+      </div>
+
+      <div class="card">
+        <h3>가까운 병원 검색</h3>
+        <div class="input-row">
+          <input class="input" id="location-input" placeholder="동네/구/시 이름 (예: 강남구, 수원시)" />
+          <button class="btn btn-ghost" id="kakao-btn">카카오맵</button>
+          <button class="btn btn-ghost" id="naver-btn">네이버지도</button>
+        </div>
+        <div class="helper">추천 진료과 또는 응급실 키워드가 자동으로 붙습니다. 위치를 입력하고 눌러 주세요.</div>
+      </div>
+
+      <div class="card">
+        <h3>병원에서 보여줄 요약</h3>
+        <div class="report" id="report-box">
+          <div class="report-row"><div class="report-label">요약</div><div class="report-val" id="report-summary">-</div></div>
+          <div class="report-row"><div class="report-label">AI 요약</div><div class="report-val" id="doctor-report">-</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      보호자 모드는 공유된 결과를 보다 쉽게 읽기 위한 화면입니다. 최종 판단은 반드시 의료진과 상의하세요.
+    </div>
+  </div>
+
+  <script>
+    const els = {
+      shareInput: document.getElementById('share-input'),
+      loadBtn: document.getElementById('load-btn'),
+      empty: document.getElementById('empty-state'),
+      shell: document.getElementById('result-shell'),
+      genTime: document.getElementById('gen-time'),
+      searchKeyword: document.getElementById('search-keyword'),
+      urgencyCard: document.getElementById('urgency-card'),
+      urgencyBadge: document.getElementById('urgency-badge'),
+      urgencyTitle: document.getElementById('urgency-title'),
+      summary: document.getElementById('summary-text'),
+      guardianHelp: document.getElementById('guardian-help-text'),
+      emergencyBox: document.getElementById('emergency-box'),
+      emergencyText: document.getElementById('emergency-text'),
+      erSearchLink: document.getElementById('er-search-link'),
+      conditions: document.getElementById('conditions-list'),
+      departments: document.getElementById('departments-list'),
+      advice: document.getElementById('advice-list'),
+      location: document.getElementById('location-input'),
+      kakaoBtn: document.getElementById('kakao-btn'),
+      naverBtn: document.getElementById('naver-btn'),
+      reportSummary: document.getElementById('report-summary'),
+      doctorReport: document.getElementById('doctor-report'),
+      printBtn: document.getElementById('print-btn'),
+      copyBtn: document.getElementById('copy-btn')
+    };
+
+    let current = null;
+
+    function getUrgencyMeta(urgency) {
+      const map = {
+        low: { cls: 'low', badge: '🟢 낮은 긴급도', title: '지켜보면서 진료 계획을 준비하세요' },
+        medium: { cls: 'medium', badge: '🟡 중간 긴급도', title: '오늘~가급적 빠른 시일 내 진료를 권장합니다' },
+        high: { cls: 'high', badge: '🔴 높은 긴급도', title: '즉시 큰 병원 또는 응급실 여부를 검토하세요' }
+      };
+      return map[urgency] || map.low;
+    }
+
+    function guardianAdvice(result) {
+      if (result.emergency || result.urgency === 'high') {
+        return '환자를 혼자 두지 말고, 호흡·의식 상태를 확인하면서 즉시 응급실 또는 119 연결을 준비해 주세요. 이동 전에는 증상 시작 시점과 악화 여부를 메모해 두면 도움이 됩니다.';
+      }
+      if (result.urgency === 'medium') {
+        return '오늘 안으로 증상 변화를 계속 확인하고, 악화되면 즉시 의료기관으로 이동할 수 있게 준비해 주세요. 수분 섭취 여부, 통증 강도 변화, 발열 여부를 함께 체크해 두면 좋습니다.';
+      }
+      return '급한 상황은 아닐 수 있지만, 증상이 지속되거나 반복되면 진료를 받게 도와 주세요. 평소와 다른 변화가 있는지, 식사·수면·활동에 영향을 주는지 함께 살펴보면 좋습니다.';
+    }
+
+    function extractToken(raw) {
+      if (!raw) return '';
+      const t = raw.trim();
+      if (t.includes('share=')) {
+        try {
+          const u = new URL(t);
+          return u.searchParams.get('share') || '';
+        } catch {
+          const m = t.match(/[?&]share=([^&#]+)/);
+          return m ? m[1] : t;
+        }
+      }
+      return t;
+    }
+
+    function decodeShare(raw) {
+      const token = extractToken(raw);
+      if (!token) throw new Error('공유 토큰이 없습니다.');
+      const candidates = [token, decodeURIComponent(token)];
+      for (const c of candidates) {
+        try {
+          const decoded = decodeURIComponent(atob(c));
+          return JSON.parse(decoded);
+        } catch (_) {}
+        try {
+          return JSON.parse(atob(c));
+        } catch (_) {}
+      }
+      throw new Error('공유 데이터를 읽을 수 없습니다. 링크가 올바른지 확인해 주세요.');
+    }
+
+    function formatTime(ts) {
+      if (!ts) return '알 수 없음';
+      try {
+        return new Date(ts).toLocaleString('ko-KR');
+      } catch {
+        return '알 수 없음';
+      }
+    }
+
+    function renderConditions(list) {
+      els.conditions.innerHTML = (list || []).map(c => {
+        const pill = c.color === 'high' ? 'high' : c.color === 'med' ? 'med' : 'low';
+        return `
+          <div class="item">
+            <div class="item-top">
+              <div class="item-title">${escapeHtml(c.name || '원인')}</div>
+              <div class="pill ${pill}">${Number(c.probability || 0)}%</div>
+            </div>
+            <div class="item-desc">${escapeHtml(c.description || '')}</div>
+          </div>
+        `;
+      }).join('') || '<div class="item"><div class="item-desc">표시할 가능한 원인이 없습니다.</div></div>';
+    }
+
+    function renderDepartments(list) {
+      els.departments.innerHTML = (list || []).map(d => `
+        <div class="dept ${d.priority === 'first' ? 'primary' : ''}">
+          <div class="dept-icon">${escapeHtml(d.icon || '🏥')}</div>
+          <div>
+            <div class="dept-tag ${d.priority === 'first' ? 'primary' : 'secondary'}">${d.priority === 'first' ? '우선 권장' : '추가 고려'}</div>
+            <div class="dept-name">${escapeHtml(d.name || '진료과')}</div>
+            <div class="dept-reason">${escapeHtml(d.reason || '')}</div>
+          </div>
+        </div>
+      `).join('') || '<div class="dept"><div><div class="dept-name">표시할 진료과가 없습니다.</div></div></div>';
+    }
+
+    function renderAdvice(list) {
+      els.advice.innerHTML = (list || []).map(a => `
+        <li><span>${escapeHtml(a.icon || '•')}</span><span>${escapeHtml(a.text || '')}</span></li>
+      `).join('') || '<li><span>•</span><span>표시할 권장 행동이 없습니다.</span></li>';
+    }
+
+    function escapeHtml(v) {
+      const d = document.createElement('div');
+      d.textContent = String(v ?? '');
+      return d.innerHTML;
+    }
+
+    function render(data) {
+      const result = data?.r;
+      if (!result) throw new Error('결과 데이터가 없습니다.');
+      current = data;
+      const meta = getUrgencyMeta(result.urgency);
+      els.empty.classList.add('hidden');
+      els.shell.classList.remove('hidden');
+      els.genTime.textContent = formatTime(data.t);
+      els.searchKeyword.textContent = result.searchKeyword || (result.departments?.[0]?.name || '병원');
+      els.urgencyCard.className = 'urgency-card ' + meta.cls;
+      els.urgencyBadge.className = 'badge ' + meta.cls;
+      els.urgencyBadge.textContent = meta.badge;
+      els.urgencyTitle.textContent = meta.title;
+      els.summary.textContent = result.summary || '요약 정보가 없습니다.';
+      els.guardianHelp.textContent = guardianAdvice(result);
+      els.reportSummary.textContent = result.summary || '요약 정보가 없습니다.';
+      els.doctorReport.textContent = result.doctorReport || 'AI 요약이 없습니다.';
+      renderConditions(result.conditions);
+      renderDepartments(result.departments);
+      renderAdvice(result.advice);
+      if (result.emergency) {
+        els.emergencyBox.classList.remove('hidden');
+        els.emergencyText.textContent = result.emergencyMsg || '응급 가능성이 있으니 즉시 의료기관과 상의하세요.';
+      } else {
+        els.emergencyBox.classList.add('hidden');
+        els.emergencyText.textContent = '';
+      }
+      const keyword = encodeURIComponent((result.searchKeyword || result.departments?.[0]?.name || '응급실') + ' ' + (els.location.value.trim() || ''));
+      els.erSearchLink.href = 'https://map.naver.com/v5/search/' + encodeURIComponent((els.location.value.trim() || '') + ' 응급실');
+    }
+
+    function openMap(kind) {
+      const result = current?.r;
+      const keyword = (result?.searchKeyword || result?.departments?.[0]?.name || '병원');
+      const q = `${els.location.value.trim()} ${keyword}`.trim();
+      const url = kind === 'kakao'
+        ? `https://map.kakao.com/link/search/${encodeURIComponent(q)}`
+        : `https://map.naver.com/v5/search/${encodeURIComponent(q)}`;
+      window.open(url, '_blank', 'noopener');
+    }
+
+    function copySummary() {
+      if (!current?.r) return alert('먼저 공유 결과를 불러와 주세요.');
+      const r = current.r;
+      const text = [
+        '[MediSense 보호자 모드 요약]',
+        `생성 시각: ${formatTime(current.t)}`,
+        `긴급도: ${getUrgencyMeta(r.urgency).badge}`,
+        `요약: ${r.summary || ''}`,
+        `권장 진료과: ${(r.departments || []).map(d => d.name).join(', ') || '-'}`,
+        `권장 행동:`,
+        ...(r.advice || []).map(a => `- ${a.text}`),
+        '',
+        `AI 요약: ${r.doctorReport || '-'}`
+      ].join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        alert('보호자 요약이 복사되었습니다.');
+      }).catch(() => {
+        alert('복사에 실패했습니다. 다시 시도해 주세요.');
+      });
+    }
+
+    function loadFromInput() {
+      try {
+        const data = decodeShare(els.shareInput.value);
+        render(data);
+      } catch (e) {
+        alert(e.message || '공유 데이터를 불러오지 못했습니다.');
+      }
+    }
+
+    els.loadBtn.addEventListener('click', loadFromInput);
+    els.shareInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadFromInput(); });
+    els.kakaoBtn.addEventListener('click', () => openMap('kakao'));
+    els.naverBtn.addEventListener('click', () => openMap('naver'));
+    els.printBtn.addEventListener('click', () => window.print());
+    els.copyBtn.addEventListener('click', copySummary);
+
+    (function init() {
+      const params = new URLSearchParams(location.search);
+      const token = params.get('share');
+      if (token) {
+        els.shareInput.value = token;
+        try {
+          render(decodeShare(token));
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
